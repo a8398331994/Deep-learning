@@ -12,6 +12,7 @@ FLAGS=tf.app.flags.FLAGS
 
 def main(_):
     print(FLAGS.learning_rate)
+    print("test")
     pass
 
 if __name__ == '__main__':
