@@ -5,7 +5,6 @@ import datetime
 from VGGmodel import VggNetModel
 from preprocessor import BatchPreprocessor
 
-
 # The parsarse of tensorflow 
 tf.app.flags.DEFINE_float('learning_rate', 0.0001, 'Learning rate for adam optimizer')
 tf.app.flags.DEFINE_float('dropout_keep_prob', 0.5, 'Dropout keep probability')
@@ -22,6 +21,7 @@ tf.app.flags.DEFINE_integer('log_step', 10, 'Logging period in terms of iteratio
 FLAGS = tf.app.flags.FLAGS
 
 
+
 def main(_):
 # Create training directories
     now = datetime.datetime.now()
@@ -31,6 +31,7 @@ def main(_):
     tensorboard_dir = os.path.join(train_dir, 'tensorboard')
     tensorboard_train_dir = os.path.join(tensorboard_dir, 'train')
     tensorboard_val_dir = os.path.join(tensorboard_dir, 'val')
+
 
     if not os.path.isdir(FLAGS.tensorboard_root_dir): os.mkdir(FLAGS.tensorboard_root_dir)
     if not os.path.isdir(train_dir): os.mkdir(train_dir)
