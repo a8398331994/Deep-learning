@@ -7,10 +7,10 @@ import cv2
 
 class BatchPreprocessor(object):
 # shuffle 拖曳
-    def __init__(self,dataset_file_path,num_classes,output_size=[224,224],horizontzl_flip=False,shuffle=False,mean_color=[132.2766,139.6506,146.9702],multi_scale=None):
+    def __init__(self,dataset_file_path,num_classes,output_size=[224,224],horizontal_flip=False,shuffle=False,mean_color=[132.2766,139.6506,146.9702],multi_scale=None):
         self.num_classes=num_classes
         self.output_size=output_size
-        self.horizontzl_flip=horizontzl_flip
+        self.horizontal_flip=horizontal_flip
         self.shuffle=shuffle
         self.mean_color=mean_color
         self.multi_scale=multi_scale
@@ -32,7 +32,7 @@ class BatchPreprocessor(object):
             self.shuffle_data()
 
     def shuffle_data(self):
-        images=self.image[:]
+        images=self.images[:]
         labels=self.labels[:]
         self.images=[]
         self.labels=[]
@@ -41,7 +41,7 @@ class BatchPreprocessor(object):
         idx=np.random.permutation(len(labels))
         for i in idx:
             self.images.append(images[i])
-            self.images.append(labels[i])
+            self.labels.append(labels[i])
 
     def reset_pointer(self):
         self.pointer=0
@@ -51,7 +51,7 @@ class BatchPreprocessor(object):
 
     def next_batch(self,batch_size):
         # Get next batch of image (path) and labels
-        paths=self.image[self.pointer:(self.pointer+batch_size)]
+        paths=self.images[self.pointer:(self.pointer+batch_size)]
         labels=self.labels[self.pointer:(self.pointer+batch_size)]
 
         # Update pointer
@@ -63,7 +63,7 @@ class BatchPreprocessor(object):
             img=cv2.imread(paths[i])
 
             # Flip image at random if flag is selected
-            if self.horizontzl_flip and np.random.random()<0.5:
+            if self.horizontal_flip and np.random.random()<0.5:
                 img=cv2.flip(img,1)
 
             if self.multi_scale is None:
@@ -88,7 +88,7 @@ class BatchPreprocessor(object):
             images[i]=img
 
         # Expand labels to one hot encoding
-        one_hot_labels=np.zero((batch_size,self.num_classes))
+        one_hot_labels=np.zeros((batch_size,self.num_classes))
         for i in range(len(labels)):
             one_hot_labels[i][labels[i]]=1
 

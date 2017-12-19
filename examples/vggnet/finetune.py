@@ -11,7 +11,7 @@ tf.app.flags.DEFINE_float('dropout_keep_prob', 0.5, 'Dropout keep probability')
 tf.app.flags.DEFINE_integer('num_epochs', 10, 'Number of epochs for training')
 tf.app.flags.DEFINE_integer('num_classes', 26, 'Number of classes')
 tf.app.flags.DEFINE_integer('batch_size', 128, 'Batch size')
-tf.app.flags.DEFINE_string('train_layers', 'fc8,fc7', 'Finetuning layers, seperated by commas')
+tf.app.flags.DEFINE_string('train_layers', 'fc8,fc7,fc6', 'Finetuning layers, seperated by commas')
 tf.app.flags.DEFINE_string('multi_scale', '', 'As preprocessing; scale the image randomly between 2 numbers and crop randomly at network\'s input size')
 tf.app.flags.DEFINE_string('training_file', '../data/train.txt', 'Training dataset file')
 tf.app.flags.DEFINE_string('val_file', '../data/val.txt', 'Validation dataset file')
@@ -19,8 +19,6 @@ tf.app.flags.DEFINE_string('tensorboard_root_dir', '../training', 'Root director
 tf.app.flags.DEFINE_integer('log_step', 10, 'Logging period in terms of iteration')
 
 FLAGS = tf.app.flags.FLAGS
-
-
 
 def main(_):
 # Create training directories
@@ -31,7 +29,6 @@ def main(_):
     tensorboard_dir = os.path.join(train_dir, 'tensorboard')
     tensorboard_train_dir = os.path.join(tensorboard_dir, 'train')
     tensorboard_val_dir = os.path.join(tensorboard_dir, 'val')
-
 
     if not os.path.isdir(FLAGS.tensorboard_root_dir): os.mkdir(FLAGS.tensorboard_root_dir)
     if not os.path.isdir(train_dir): os.mkdir(train_dir)
@@ -63,10 +60,12 @@ def main(_):
     model = VggNetModel(num_classes=FLAGS.num_classes, dropout_keep_prob=dropout_keep_prob)
     loss = model.loss(x, y)
     train_op = model.optimize(FLAGS.learning_rate, train_layers)
-
+   
     # Training accuracy of the model
     correct_pred = tf.equal(tf.argmax(model.score, 1), tf.argmax(y, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_pred, tf.float32))
+
+    print("Model init finish")
 
     # Summaries
     tf.summary.scalar('train_loss', loss)
@@ -76,6 +75,8 @@ def main(_):
     train_writer = tf.summary.FileWriter(tensorboard_train_dir)
     val_writer = tf.summary.FileWriter(tensorboard_val_dir)
     saver = tf.train.Saver()
+
+    print("Tensorboard init finish")
 
     # Batch preprocessors
     multi_scale = FLAGS.multi_scale.split(',')
@@ -91,15 +92,17 @@ def main(_):
     train_batches_per_epoch=np.floor(len(train_preprocessor.labels)/FLAGS.batch_size).astype(np.int16)
     val_batches_per_epoch=np.floor(len(val_preprocessor.labels)/FLAGS.batch_size).astype(np.int16)
 
+    print(train_batches_per_epoch,val_batches_per_epoch)
+    print("BatchPreprocessor init finish")
+
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
-        train_write.add_graph(sess.graph)
+        train_writer.add_graph(sess.graph)
 
         # Load the pretrained weights
         model.load_original_weights(sess,skip_layers=train_layers)
 
         # Directly restore ()
-
         print("{} Start training..".format(datetime.datetime.now()))
         print("{} Open Tensorboard at --logdir {}".format(datetime.datetime.now(),tensorboard_dir))
 
